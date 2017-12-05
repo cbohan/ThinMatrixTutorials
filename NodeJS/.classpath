@@ -2,12 +2,13 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/lwjgl-release-3.1.3-custom/lwjgl.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/lwjgl-release-3.1.3-custom/lwjgl-glfw.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/lwjgl-release-3.1.3-custom/lwjgl-glfw-natives-windows.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/lwjgl-release-3.1.3-custom/lwjgl-natives-windows.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/lwjgl-release-3.1.3-custom/lwjgl-opengl.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/LWJGL-OpenGL-Utils-master/libs/libstruct.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Connor/Downloads/joml-1.9.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/joml-1.9.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/libstruct.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/lwjgl.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/lwjgl-glfw.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/lwjgl-glfw-natives-windows.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/lwjgl-natives-windows.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/lwjgl-opengl.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Connor/git/ThinMatrixTutorial/NodeJS/libs/lwjgl-opengl-natives-windows.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

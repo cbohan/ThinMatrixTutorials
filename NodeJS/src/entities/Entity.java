@@ -1,18 +1,15 @@
 package entities;
 
-import models.ModelLoader;
 import models.OBJLoader;
 import models.RawModel;
 import models.TexturedModel;
 import textures.Texture;
 import textures.TextureLoader;
 
-public class Entity {
-	private static ModelLoader modelLoader = new ModelLoader();
-	private static TextureLoader textureLoader = new TextureLoader();
-	
-	private TexturedModel model;
-	private Transform transform;
+public class Entity {	
+	protected TexturedModel model;
+	protected Transform transform;
+	protected int textureIndex = 0;
 	
 	public Entity(TexturedModel model) {
 		this.model = model;
@@ -20,12 +17,31 @@ public class Entity {
 	}
 	
 	public Entity(String modelPath, String texturePath) {
-		RawModel model = OBJLoader.loadOBJ(modelPath, modelLoader);
-		Texture texture = textureLoader.loadTexture(texturePath);
-		this.model = new TexturedModel(model, texture);
+		RawModel rawModel = OBJLoader.loadOBJ(modelPath);
+		Texture texture = TextureLoader.loadTexture(texturePath);
+		model = new TexturedModel(rawModel, texture);
 		transform = new Transform();
+	}
+	
+	public Entity(String modelPath, String texturePath, int textureIndex, int numberOfRows) {
+		RawModel rawModel = OBJLoader.loadOBJ(modelPath);
+		Texture texture = TextureLoader.loadTexture(texturePath);
+		texture.setNumberOfRows(numberOfRows);
+		model = new TexturedModel(rawModel, texture);
+		transform = new Transform();
+		this.textureIndex = textureIndex;
 	}
 	
 	public TexturedModel getTexturedModel() { return model; }
 	public Transform getTransform() { return transform; }
+	
+	public int getTextureIndex() { return textureIndex; } 
+	public float getTextureXOffset() {
+		int column = textureIndex % model.getTexture().getNumberOfRows();
+		return (float)column / (float)model.getTexture().getNumberOfRows();
+	}
+	public float getTextureYOffset() {
+		int row = textureIndex / model.getTexture().getNumberOfRows();
+		return (float)row / (float)model.getTexture().getNumberOfRows();
+	}
 }

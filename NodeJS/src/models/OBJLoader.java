@@ -5,7 +5,14 @@ import java.util.*;
 import org.joml.*;
 
 public class OBJLoader {
-	public static RawModel loadOBJ(String fileName, ModelLoader loader) {
+	private static Map<String, RawModel> objModelMap = new HashMap<String, RawModel>();
+	
+	public static RawModel loadOBJ(String fileName) {
+		if (objModelMap.containsKey(fileName))
+			return objModelMap.get(fileName);
+		
+		System.out.println("Loading model: " + fileName);
+		
 		FileReader fr = null;
 		
 		try {
@@ -120,8 +127,10 @@ public class OBJLoader {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-				
-		return loader.loadToVAO(positionsArray, uvsArray, normalsArray, indicesArray);
+		
+		RawModel model = ModelLoader.loadToVAO(positionsArray, uvsArray, normalsArray, indicesArray);
+		objModelMap.put(fileName, model);
+		return model;
 	}
 	
 	private static int contains(List<Vertex> vertices, Vertex vert) {

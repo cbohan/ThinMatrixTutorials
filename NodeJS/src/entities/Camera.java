@@ -7,20 +7,20 @@ import org.joml.Vector3f;
 import renderEngine.Window;
 
 public class Camera {
-	private float fov = 70f;
-	private float nearPlane = 0.1f;
-	private float farPlane = 2000f;
+	protected float fov = 70f;
+	protected float nearPlane = 0.1f;
+	protected float farPlane = 2000f;
 	
-	private Matrix4f projectionMatrix;
-	private Matrix4f viewMatrix;
+	protected Matrix4f projectionMatrix;
+	protected Matrix4f viewMatrix;
 	
-	private Transform transform;
+	protected Transform transform;
 	
-	private float skyRed;
-	private float skyGreen;
-	private float skyBlue;
-	private float fogDensity;
-	private float fogGradient;
+	protected float skyRed;
+	protected float skyGreen;
+	protected float skyBlue;
+	protected float fogDensity;
+	protected float fogGradient;
 	
 	public Camera() {
 		createProjectionMatrix();

@@ -13,10 +13,10 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 public class ModelLoader {
-	private List<Integer> vaos = new ArrayList<Integer>();
-	private List<Integer> vbos = new ArrayList<Integer>();
+	private static List<Integer> vaos = new ArrayList<Integer>();
+	private static List<Integer> vbos = new ArrayList<Integer>();
 	
-	public RawModel loadToVAO(float[] positions, float[] uvs, float[] normals, int[] indices) {
+	public static RawModel loadToVAO(float[] positions, float[] uvs, float[] normals, int[] indices) {
 		int vaoID = createVAO();
 		bindIndicesBuffer(indices);
 		storeDataInAttributeList(0, positions, 3);
@@ -27,14 +27,14 @@ public class ModelLoader {
 		return new RawModel(vaoID, indices.length);
 	}
 	
-	private int createVAO() {
+	private static int createVAO() {
 		int vaoID = glGenVertexArrays();
 		vaos.add(vaoID);
 		glBindVertexArray(vaoID);
 		return vaoID;
 	}
 	
-	private void storeDataInAttributeList(int attributeNumber, float[] data, int dataLength) {
+	private static void storeDataInAttributeList(int attributeNumber, float[] data, int dataLength) {
 		int vboID = glGenBuffers();
 		vbos.add(vboID);
 		glBindBuffer(GL_ARRAY_BUFFER, vboID);
@@ -44,11 +44,11 @@ public class ModelLoader {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	
-	private void unbindVAO() {
+	private static void unbindVAO() {
 		glBindVertexArray(0);
 	}
 	
-	private void bindIndicesBuffer(int[] indices) {
+	private static void bindIndicesBuffer(int[] indices) {
 		int vboID = glGenBuffers();
 		vbos.add(vboID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID);
@@ -56,21 +56,21 @@ public class ModelLoader {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 	}
 	
-	private FloatBuffer storeDataInFloatBuffer(float[] data) {
+	private static FloatBuffer storeDataInFloatBuffer(float[] data) {
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
 		buffer.put(data);
 		buffer.flip();
 		return buffer;
 	}
 	
-	private IntBuffer storeDataInIntBuffer(int[] data) {
+	private static IntBuffer storeDataInIntBuffer(int[] data) {
 		IntBuffer buffer = BufferUtils.createIntBuffer(data.length);
 		buffer.put(data);
 		buffer.flip();
 		return buffer;
 	}
 	
-	public void cleanUp() {
+	public static void cleanUp() {
 		for (int vao:vaos) 
 			glDeleteVertexArrays(vao);
 		for (int vbo:vbos)

@@ -10,14 +10,14 @@ import shaders.*;
 import terrains.Terrain;
 
 public class TerrainRenderer {
-	private TerrainShader shader = new TerrainShader();
-	List<Terrain> terrains = new ArrayList<Terrain>();
+	private static TerrainShader shader = new TerrainShader();
+	private static List<Terrain> terrains = new ArrayList<Terrain>();
 	
-	public void addTerrain(Terrain terrain) {
+	public static void addTerrain(Terrain terrain) {
 		terrains.add(terrain);
 	}
 	
-	public void render(Scene scene, Camera camera) {
+	public static void render(Scene scene, Camera camera) {
 		shader.start();
 		shader.loadLight(scene.getLight());
 		shader.loadViewMatrix(camera.getViewMatrix());

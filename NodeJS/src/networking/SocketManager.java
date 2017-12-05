@@ -14,6 +14,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import renderEngine.Window;
+
 public class SocketManager {
 	private final int IN_BUFFER_SIZE = 4096;
 	
@@ -24,6 +26,7 @@ public class SocketManager {
 	private ByteBuffer byteBuffer;
 	private Map<Integer, NetTransform> players;
 	private int ourId = -1;
+	private long startTime;
 	
 	public SocketManager(String ip, int port) {
 		try {
@@ -33,6 +36,7 @@ public class SocketManager {
 			this.inBuffer = new byte[IN_BUFFER_SIZE];
 			this.byteBuffer = ByteBuffer.allocate(IN_BUFFER_SIZE);
 			this.players = new HashMap<Integer, NetTransform>();
+			this.startTime = Window.getCurrentTime();
 			requestId();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -54,8 +58,9 @@ public class SocketManager {
 	}
 	
 	public void sendPosition(float x, float y, float z) {
-		ByteBuffer buffer = ByteBuffer.allocate(16);
+		ByteBuffer buffer = ByteBuffer.allocate(20);
 		buffer.putInt(0);
+		buffer.putInt((int)(Window.getCurrentTime() - startTime));
 		buffer.putFloat(x);
 		buffer.putFloat(y);
 		buffer.putFloat(z);
@@ -89,6 +94,8 @@ public class SocketManager {
 					for (int i = 0; i < packetLength; i++) {
 						int id = byteBuffer.getInt(currentPosition);
 						currentPosition += 4;
+						int time = byteBuffer.getInt(currentPosition);
+						currentPosition += 4;
 						float x = byteBuffer.getFloat(currentPosition);
 						currentPosition += 4;
 						float y = byteBuffer.getFloat(currentPosition);
@@ -98,7 +105,7 @@ public class SocketManager {
 						
 						if(this.players.containsKey(id) == false) 
 							this.players.put(id, new NetTransform(id));
-						this.players.get(id).setPosition(x, y, z);
+						this.players.get(id).setPosition(x, y, z, time);
 						this.players.get(id).setAlive(true);
 					}
 					

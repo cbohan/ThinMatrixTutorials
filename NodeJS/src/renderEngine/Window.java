@@ -14,16 +14,22 @@ import org.lwjgl.opengl.GL;
 import entities.Camera;
 
 public class Window {
-	static int windowWidth;
-	static int windowHeight;
+	private static int windowWidth;
+	private static int windowHeight;
 	
-	static double mouseDeltaScroll;
-	static double mouseX, mouseY;
-	static double mouseDeltaX, mouseDeltaY;
-	static DoubleBuffer mouseXBuffer, mouseYBuffer;
-	static long window;
-	static boolean mouseLeftDown = false;
-	static boolean mouseLeftClicked = false, mouseLeftLatch = false;
+	private static double mouseDeltaScroll;
+	private static double mouseX, mouseY;
+	private static double mouseDeltaX, mouseDeltaY;
+	private static DoubleBuffer mouseXBuffer, mouseYBuffer;
+	private static long window;
+	
+	private static boolean mouseLeftDown = false;
+	private static boolean mouseLeftClicked = false, mouseLeftLatch = false;
+	private static boolean mouseRightDown = false;
+	private static boolean mouseRightClicked = false, mouseRightLatch = false;
+	
+	private static long lastFrameTime;
+	private static float deltaTime;
 	
 	public static void init(int width, int height) {
 		//Initialize GLFW.
@@ -34,6 +40,7 @@ public class Window {
 		windowWidth = width;
 		windowHeight = height;
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_SAMPLES, 4);
 		window = glfwCreateWindow(windowWidth, windowHeight, "", 0, 0);
 		if (window == 0)
 			throw new IllegalStateException("Failed to create a window.");
@@ -60,6 +67,14 @@ public class Window {
 			}
 			if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 				mouseLeftDown = false;
+			
+			if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+				mouseRightDown = true;
+				mouseRightClicked = true;
+				mouseRightLatch = false;
+			}
+			if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+				mouseRightDown = false;
 		}));
 		
 		//Initialize OpenGL.
@@ -67,6 +82,9 @@ public class Window {
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+		
+		//Initialize timer.
+		lastFrameTime = getCurrentTime();
 	}
 	
 	public static boolean shouldClose() {
@@ -95,6 +113,7 @@ public class Window {
 	public static double getNormalizedMouseDeltaY() { return mouseDeltaY / (double)windowHeight; }
 	
 	public static boolean getLeftMouseDown() { return mouseLeftDown; }
+	public static boolean getRightMouseDown() { return mouseRightDown; }
 	
 	public static void pollEvents() {
 		mouseDeltaScroll = 0;
@@ -112,7 +131,19 @@ public class Window {
 			mouseLeftLatch = true;
 		else if (mouseLeftClicked == true && mouseLeftLatch == true) 
 			mouseLeftClicked = false;
+		
+		if (mouseRightClicked == true && mouseRightLatch == false)
+			mouseRightLatch = true;
+		else if (mouseRightClicked == true && mouseRightLatch == true)
+			mouseRightClicked = false;
+		
+		long currentFrameTime = getCurrentTime();
+		deltaTime = (currentFrameTime - lastFrameTime) / 1000f;
+		lastFrameTime = currentFrameTime;
 	}
+	
+	public static float getDeltaTime() { return deltaTime; }
+	public static long getCurrentTime() { return  System.nanoTime() / 1000000; }
 	
 	public static void clearBuffer(Camera camera) {
 		glClearColor(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue(), 1f);

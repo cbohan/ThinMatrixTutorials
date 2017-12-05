@@ -1,6 +1,7 @@
 package shaders;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import entities.Light;
@@ -26,6 +27,9 @@ public class StaticShader extends ShaderProgram {
 	private int fogDensityLocation;
 	private int fogGradientLocation;
 	
+	private int textureNumberOfRowsLocation;
+	private int textureOffsetLocation;
+	
 	public StaticShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
 	}
@@ -48,6 +52,8 @@ public class StaticShader extends ShaderProgram {
 		skyColorLocation = super.getUniformLocation("skyColor");
 		fogDensityLocation = super.getUniformLocation("fogDensity");
 		fogGradientLocation = super.getUniformLocation("fogGradient");
+		textureNumberOfRowsLocation = super.getUniformLocation("textureNumberOfRows");
+		textureOffsetLocation = super.getUniformLocation("textureOffset");
 	}
 	
 	public void loadTransformationMatrix(Matrix4f matrix) { super.loadMatrix(transformationMatrixLocation, matrix); }
@@ -71,4 +77,9 @@ public class StaticShader extends ShaderProgram {
 	public void loadSkyColor(float r, float g, float b) { super.loadVec3(skyColorLocation, new Vector3f(r, g, b)); };
 	public void loadFogDensity(float density) { super.loadFloat(fogDensityLocation, density); }
 	public void loadFogGradient(float gradient) { super.loadFloat(fogGradientLocation, gradient); }
+	
+	public void loadTextureInfo(float textureNumberOfRows, float textureOffsetX, float textureOffsetY) {
+		super.loadFloat(textureNumberOfRowsLocation, textureNumberOfRows);
+		super.loadVec2(textureOffsetLocation, new Vector2f(textureOffsetX, textureOffsetY));
+	}
 }

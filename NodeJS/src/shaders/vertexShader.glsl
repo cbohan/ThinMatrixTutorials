@@ -17,6 +17,8 @@ uniform vec3 lightPosition;
 uniform float overrideNormals;
 uniform float fogDensity;
 uniform float fogGradient;
+uniform float textureNumberOfRows;
+uniform vec2 textureOffset;
 
 void main(void) {
 	vec4 worldPosition = transformationMatrix * vec4(position, 1.0);
@@ -27,7 +29,7 @@ void main(void) {
 		actualNormal = vec4(0, 1, 0, 0);
 	}
 	vert_normal = actualNormal;	
-	vert_textureCoords = textureCoords;
+	vert_textureCoords = (textureCoords / textureNumberOfRows) + textureOffset;
 	
 	vert_toLightVector = lightPosition - worldPosition.xyz;
 	vert_toCameraVector = (inverse(viewMatrix) * vec4(0.0, 0.0, 0.0, 1.0)).xyz - worldPosition.xyz;

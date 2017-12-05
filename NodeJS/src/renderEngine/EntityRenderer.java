@@ -10,17 +10,17 @@ import models.*;
 import shaders.StaticShader;
 
 public class EntityRenderer {	
-	StaticShader shader = new StaticShader();
+	private static StaticShader shader = new StaticShader();
 	
-	private Map<TexturedModel, List<Entity>> entities = new HashMap<TexturedModel, List<Entity>>();
+	private static Map<TexturedModel, List<Entity>> entities = new HashMap<TexturedModel, List<Entity>>();
 	
-	public void addEntity(Entity entity) {
+	public static void addEntity(Entity entity) {
 		if(entities.containsKey(entity.getTexturedModel()) == false)
 			entities.put(entity.getTexturedModel(), new ArrayList<Entity>());
 		entities.get(entity.getTexturedModel()).add(entity);
 	}
 	
-	public void render(Scene scene, Camera camera) {
+	public static void render(Scene scene, Camera camera) {
 		shader.start();
 		shader.loadLight(scene.getLight());
 		shader.loadViewMatrix(camera.getViewMatrix());
@@ -45,6 +45,8 @@ public class EntityRenderer {
 			List<Entity> batch = entities.get(model);
 			for (Entity entity: batch) {
 				shader.loadTransformationMatrix(entity.getTransform().getMatrix());
+				shader.loadTextureInfo(entity.getTexturedModel().getTexture().getNumberOfRows(), 
+						entity.getTextureXOffset(), entity.getTextureYOffset());
 				glDrawElements(GL_TRIANGLES, rawModel.getVertexCount(), GL_UNSIGNED_INT, 0);
 			}
 			
