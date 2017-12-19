@@ -1,7 +1,8 @@
-package renderEngine;
+package window;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.DoubleBuffer;
 
@@ -82,6 +83,8 @@ public class Window {
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+		glEnable(GL_FRAMEBUFFER_SRGB);
+		glEnable(GL_CLIP_DISTANCE0);
 		
 		//Initialize timer.
 		lastFrameTime = getCurrentTime();

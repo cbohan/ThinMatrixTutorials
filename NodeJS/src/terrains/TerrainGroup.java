@@ -1,6 +1,5 @@
 package terrains;
 
-import renderEngine.TerrainRenderer;
 import textures.*;
 
 public class TerrainGroup {
@@ -8,7 +7,8 @@ public class TerrainGroup {
 	private int sizeX;
 	private int sizeZ;
 	
-	public TerrainGroup(int x, int z, TerrainTexturePack texturePack, Texture splatMap, String heightMapFile) {
+	public TerrainGroup(int x, int z, TerrainTexturePack texturePack, String splatMapFile, String heightMapFile,
+			String normalMapFile) {
 		sizeX = x;
 		sizeZ = z;
 		
@@ -17,7 +17,11 @@ public class TerrainGroup {
 			int xPos = i - (x / 2);
 			for(int j = 0; j < z; j++) {
 				int zPos = j - (z / 2);
-				terrains[i][j] = new Terrain(xPos, zPos, texturePack, splatMap, heightMapFile);
+				String splatMapChunkFile = splatMapFile + "_" + i + "_" + j + ".png";
+				String heightMapChunkFile = heightMapFile + "_" + i + "_" + j + ".png";
+				String normalMapChunkFile = normalMapFile + "_" + i + "_" + j + ".png";
+				terrains[i][j] = new Terrain(xPos, zPos, texturePack, splatMapChunkFile, heightMapChunkFile,
+						normalMapChunkFile);
 			}
 		}
 	}

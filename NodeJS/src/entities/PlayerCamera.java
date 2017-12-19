@@ -1,6 +1,6 @@
 package entities;
 
-import renderEngine.Window;
+import window.Window;
 
 public class PlayerCamera extends Camera {
 	protected Player player;

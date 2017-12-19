@@ -15,8 +15,7 @@ import textures.*;
 
 public class Terrain {
 	private static final float SIZE = 128;
-	private static final float MAX_HEIGHT = 10;
-	private static final float MAX_PIXEL_COLOR = 255 * 255 * 255;
+	private static final float MAX_HEIGHT = 600;
 	
 	private float x;
 	private float z;
@@ -25,13 +24,15 @@ public class Terrain {
 	private Texture splatMap;
 	private Transform transform;
 	private float[][] heightMapValues;
+	private Vector3f[][] normalMapValues;
 	
-	public Terrain(int gridX, int gridZ, TerrainTexturePack texturePack, Texture splatMap, String heightMap) {
+	public Terrain(int gridX, int gridZ, TerrainTexturePack texturePack, String splatMap, String heightMap,
+			String normalMap) {
 		this.texturePack = texturePack;
-		this.splatMap = splatMap;
+		this.splatMap = TextureLoader.loadTexture(splatMap, true, false);
 		this.x = (gridX * SIZE) - (SIZE / 2.0f);
 		this.z = (gridZ * SIZE) - (SIZE / 2.0f);
-		this.model = generateTerrain(heightMap);
+		this.model = generateTerrain(heightMap, normalMap);
 		this.transform = new Transform();
 		this.transform.setPosX(x);
 		this.transform.setPosZ(z); 
@@ -44,11 +45,13 @@ public class Terrain {
 	public TerrainTexturePack getTexturePack() { return texturePack; }
 	public Texture getSplatMap() { return splatMap; }
 	
-	private RawModel generateTerrain(String heightMapFile){
+	private RawModel generateTerrain(String heightMapFile, String normalMapFile){
 		//Load the height map.
 		BufferedImage heightMap = null;
+		BufferedImage normalMap = null;
 		try {
 			heightMap = ImageIO.read(new File(heightMapFile));
+			normalMap = ImageIO.read(new File(normalMapFile));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,6 +61,11 @@ public class Terrain {
 		for (int x = 0; x < heightMap.getWidth(); x++)
 			for (int z = 0; z < heightMap.getHeight(); z++)
 				heightMapValues[x][z] = getHeight(x, z, heightMap);
+		
+		normalMapValues = new Vector3f[normalMap.getWidth()][normalMap.getHeight()];
+		for (int x = 0; x < normalMap.getWidth(); x++)
+			for (int z = 0; z < normalMap.getHeight(); z++)
+				normalMapValues[x][z] = getNormal(x, z, normalMap);
 		
 		int count = vertexCount * vertexCount;
 		float[] vertices = new float[count * 3];
@@ -70,12 +78,11 @@ public class Terrain {
 				vertices[vertexPointer*3] = (float)j/((float)vertexCount - 1) * SIZE;
 				vertices[vertexPointer*3+1] = heightMapValues[j][i];
 				vertices[vertexPointer*3+2] = (float)i/((float)vertexCount - 1) * SIZE;
-				Vector3f normal = calculateNormal(j, i, heightMapValues);
-				normals[vertexPointer*3] = normal.x;
-				normals[vertexPointer*3+1] = normal.y;
-				normals[vertexPointer*3+2] = normal.z;
-				textureCoords[vertexPointer*2] = (float)j/((float)vertexCount - 1);
-				textureCoords[vertexPointer*2+1] = (float)i/((float)vertexCount - 1);
+				normals[vertexPointer*3] = normalMapValues[j][i].x;
+				normals[vertexPointer*3+1] = normalMapValues[j][i].y;
+				normals[vertexPointer*3+2] = normalMapValues[j][i].z;
+				textureCoords[vertexPointer*2] = ((float)j/((float)vertexCount - 1)) * (1 - (1f / SIZE)) + (.5f / SIZE);
+				textureCoords[vertexPointer*2+1] = (1f - (float)i/((float)vertexCount - 1)) * (1 - (1f / SIZE)) + (.5f / SIZE);
 				vertexPointer++;
 			}
 		}
@@ -95,15 +102,6 @@ public class Terrain {
 			}
 		}
 		return ModelLoader.loadToVAO(vertices, textureCoords, normals, indices);
-	}
-	
-	private Vector3f calculateNormal(int x, int z, float[][] heightMapValues) {
-		float heightL = getHeight(x-1, z, heightMapValues);
-		float heightR = getHeight(x+1, z, heightMapValues);
-		float heightD = getHeight(x, z-1, heightMapValues);
-		float heightU = getHeight(x, z+1, heightMapValues);
-		Vector3f normal = new Vector3f(heightL-heightR, 2f, heightD-heightU);
-		return normal.normalize();
 	}
 	
 	public boolean onTerrain(float worldX, float worldZ) {
@@ -158,21 +156,46 @@ public class Terrain {
 		return l1 * p1.y + l2 * p2.y + l3 * p3.y;
 	}
 	
-	private float getHeight(int x, int z, float[][] heightMapValues) {
-		if (x < 0 || x >= heightMapValues.length || z < 0 || z >= heightMapValues[0].length)
-			return 0;
-		return heightMapValues[x][z];
-	}
-	
 	private float getHeight(int x, int z, BufferedImage heightMap) {
 		if (x < 0 || x >= heightMap.getWidth() || z < 0 || z >= heightMap.getHeight())
 			return 0;
 		
-		float height = heightMap.getRGB(x, z);
-		height += MAX_PIXEL_COLOR / 2f;
-		height /= MAX_PIXEL_COLOR / 2f;
+		int heightBytes = heightMap.getRGB(x, heightMap.getHeight() - z - 1);
+		int rByte = unsignedToBytes((byte)((heightBytes >> 16) & 0xFF));
+		int gByte = unsignedToBytes((byte)((heightBytes >> 8) & 0xFF));
+		int bByte = unsignedToBytes((byte)((heightBytes >> 0) & 0xFF));
+						
+		float height = (float) ((rByte * (1.0/(255.0))) + 
+				(gByte * (1.0/(255.0 * 255.0))) + 
+				(bByte * (1.0/(255.0 * 255.0 * 255.0))));
 		height *= MAX_HEIGHT;
 		
 		return height;
+	}
+	
+	private Vector3f getNormal(int x, int z, BufferedImage normalMap) {
+		if (x < 0 || x >= normalMap.getWidth() || z < 0 || z >= normalMap.getHeight())
+			return new Vector3f(0, 1, 0);
+		
+		int heightBytes = normalMap.getRGB(x, normalMap.getHeight() - z - 1);
+		int rByte = unsignedToBytes((byte)((heightBytes >> 16) & 0xFF));
+		int gByte = unsignedToBytes((byte)((heightBytes >> 8) & 0xFF));
+		int bByte = unsignedToBytes((byte)((heightBytes >> 0) & 0xFF));
+						
+		float xNorm = rByte / 255f;
+		xNorm = -((xNorm * 2f) - 1f);
+		float yNorm = gByte / 255f;
+		yNorm = (yNorm * 2f) - 1f;
+		float zNorm = bByte / 255f;
+		zNorm = ((zNorm * 2f) - 1f);
+		
+		
+		return new Vector3f(xNorm, yNorm, zNorm);
+	}
+	
+	private int unsignedToBytes(byte a)
+	{
+	    int b = a & 0xFF;
+	    return b;
 	}
 }

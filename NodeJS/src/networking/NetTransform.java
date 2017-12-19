@@ -1,6 +1,6 @@
 package networking;
 
-import renderEngine.Window;
+import window.Window;
 
 public class NetTransform {
 	private int id;

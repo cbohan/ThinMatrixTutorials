@@ -1,6 +1,7 @@
 package textures;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL21.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -24,8 +25,20 @@ public class Texture {
 	private int numberOfRows = 1;
 	private boolean hasTransparency = false;
 	private boolean overrideNormals = false;
+	private byte[][][] data;
 	
-	public Texture(String fileName) {
+	public Texture(int id, int width, int height) {
+		this.id = id;
+		this.width = width;
+		this.height = height;
+		this.data = new byte[width][height][4];
+	}
+	
+	public Texture(String filename){
+		this(filename, false, true);
+	}
+	
+	public Texture(String fileName, boolean clamp, boolean mip) {
 		BufferedImage bufferedImage;
 		
 		try {
@@ -34,12 +47,19 @@ public class Texture {
 			height = bufferedImage.getHeight();
 			
 			int[] pixels_raw = new int[width * height];
+			
 			pixels_raw = bufferedImage.getRGB(0, 0, width, height, null, 0, width);
+			data = new byte[width][height][4];
 			
 			ByteBuffer pixels = BufferUtils.createByteBuffer(width * height * 4);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					int pixel = pixels_raw[i*width + j];
+					data[i][j][0] = (byte)((pixel >> 16) & 0xFF);
+					data[i][j][1] = (byte)((pixel >> 8) & 0xFF);
+					data[i][j][2] = (byte)((pixel >> 0) & 0xFF);
+					data[i][j][3] = (byte)((pixel >> 24) & 0xFF);
+					
 					pixels.put((byte)((pixel >> 16) & 0xFF)); //red
 					pixels.put((byte)((pixel >> 8) & 0xFF)); //green
 					pixels.put((byte)((pixel >> 0) & 0xFF)); //blue
@@ -52,17 +72,25 @@ public class Texture {
 			glBindTexture(GL_TEXTURE_2D, id);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 			
-			//Enable mipmapping.
-			glGenerateMipmap(GL_TEXTURE_2D);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0);
+			if (clamp) {
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			}
 			
-			//Enable anisotropic filtering.
-			if (GL.getCapabilities().GL_EXT_texture_filter_anisotropic){
-				float anisotropicAmount = Math.min(8, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
-				glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropicAmount);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+			
+			if (mip) {
+				//Enable mipmapping.
+				glGenerateMipmap(GL_TEXTURE_2D);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0);
+				
+				//Enable anisotropic filtering.
+				if (GL.getCapabilities().GL_EXT_texture_filter_anisotropic){
+					float anisotropicAmount = Math.min(8, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+					glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropicAmount);
+				}
 			}
 		} catch(IOException e) {
 			System.err.println("Failed to load image: " + fileName);
@@ -85,4 +113,8 @@ public class Texture {
 	public void setHasTransparency(boolean transparent) { hasTransparency = transparent; }
 	public boolean getOverrideNormals() { return overrideNormals; }
 	public void setOverrideNormals(boolean override) { overrideNormals = override; }
+	public byte getRed(int x, int y) { return data[x][y][0]; }
+	public byte getGreen(int x, int y) { return data[x][y][1]; }
+	public byte getBlue(int x, int y) { return data[x][y][2]; }
+	public byte getAlpha(int x, int y) { return data[x][y][3]; }
 }

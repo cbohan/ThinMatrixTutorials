@@ -7,10 +7,14 @@ public class TextureLoader {
 	private static Map<String, Texture> texturesMap = new HashMap<String, Texture>();
 	
 	public static Texture loadTexture(String fileName) {
+		return loadTexture(fileName, false, true);
+	}
+	
+	public static Texture loadTexture(String fileName, boolean clamp, boolean mip) {
 		if (texturesMap.containsKey(fileName))
 			return texturesMap.get(fileName);
 		
-		Texture texture = new Texture(fileName);
+		Texture texture = new Texture(fileName, clamp, mip);
 		texturesMap.put(fileName, texture);
 		return texture;
 	}

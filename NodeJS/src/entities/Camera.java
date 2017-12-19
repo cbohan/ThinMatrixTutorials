@@ -4,7 +4,7 @@ import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import renderEngine.Window;
+import window.Window;
 
 public class Camera {
 	protected float fov = 70f;
@@ -82,4 +82,6 @@ public class Camera {
 	public void setFogGradient(float gradient) { fogGradient = gradient; }
 	public float getFogDensity() { return fogDensity; }
 	public float getFogGradient() { return fogGradient; }
+	public float getNearPlane() { return nearPlane; }
+	public float getFarPlane() { return farPlane; }
 }

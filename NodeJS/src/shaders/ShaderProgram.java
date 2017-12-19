@@ -60,6 +60,7 @@ public abstract class ShaderProgram {
 	protected void loadFloat(int location, float value) { glUniform1f(location, value); }
 	protected void loadVec2(int location, Vector2f value) { glUniform2f(location, value.x(), value.y()); }
 	protected void loadVec3(int location, Vector3f value) { glUniform3f(location, value.x(), value.y(), value.z()); }
+	protected void loadVec4(int location, Vector4f value) { glUniform4f(location, value.x(), value.y(), value.z(), value.w()); }
 	protected void loadMatrix(int location, Matrix4f value) { 
 		value.get(matrixBuffer);
 		glUniformMatrix4fv(location, false, matrixBuffer); 

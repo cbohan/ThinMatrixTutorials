@@ -1,4 +1,4 @@
-package renderEngine;
+package terrains;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -7,7 +7,6 @@ import static org.lwjgl.opengl.GL30.*;
 import java.util.*;
 import entities.*;
 import shaders.*;
-import terrains.Terrain;
 
 public class TerrainRenderer {
 	private static TerrainShader shader = new TerrainShader();
@@ -17,9 +16,10 @@ public class TerrainRenderer {
 		terrains.add(terrain);
 	}
 	
-	public static void render(Scene scene, Camera camera) {
+	public static void render(Scene scene, Camera camera, float clippingPlaneDirection, float clippingPlaneHeight) {
 		shader.start();
-		shader.loadLight(scene.getLight());
+		shader.loadClipPlane(0, clippingPlaneDirection, 0, clippingPlaneHeight);
+		shader.loadLights(scene.getLights());
 		shader.loadViewMatrix(camera.getViewMatrix());
 		shader.loadProjectionMatrix(camera.getProjectionMatrix());
 		shader.loadSkyColor(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());

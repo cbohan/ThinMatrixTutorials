@@ -1,33 +1,36 @@
 package shaders;
 
+import java.util.List;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import entities.Light;
 
 public class TerrainShader extends ShaderProgram {
+	private static final int MAX_LIGHTS = 16;
+	
 	private static final String VERTEX_FILE = "src/shaders/terrainVertexShader.glsl";
 	private static final String FRAGMENT_FILE = "src/shaders/terrainFragmentShader.glsl";
 	
 	private int transformationMatrixLocation;
 	private int projectionMatrixLocation;
 	private int viewMatrixLocation;
-	
-	private int lightPositionLocation;
-	private int lightColorLocation;
-	
+	private int lightPositionLocation[];
+	private int lightColorLocation[];
+	private int lightAttenuationFactorLocation[];
 	private int shineDampingLocation;
 	private int reflectivityLocation;
-	
 	private int skyColorLocation;
 	private int fogDensityLocation;
 	private int fogGradientLocation;
-	
 	private int backgroundTextureLocation;
 	private int rTextureLocation;
 	private int gTextureLocation;
 	private int bTextureLocation;
 	private int splatMapLocation;
+	private int clipPlaneLocation;
 	
 	public TerrainShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -43,8 +46,6 @@ public class TerrainShader extends ShaderProgram {
 		transformationMatrixLocation = super.getUniformLocation("transformationMatrix");
 		projectionMatrixLocation = super.getUniformLocation("projectionMatrix");
 		viewMatrixLocation = super.getUniformLocation("viewMatrix");
-		lightPositionLocation = super.getUniformLocation("lightPosition");
-		lightColorLocation = super.getUniformLocation("lightColor");
 		shineDampingLocation = super.getUniformLocation("shineDamping");
 		reflectivityLocation = super.getUniformLocation("reflectivity");
 		skyColorLocation = super.getUniformLocation("skyColor");
@@ -55,19 +56,39 @@ public class TerrainShader extends ShaderProgram {
 		gTextureLocation = super.getUniformLocation("gTexture");
 		bTextureLocation = super.getUniformLocation("bTexture");
 		splatMapLocation = super.getUniformLocation("splatMap");
+		clipPlaneLocation = super.getUniformLocation("clipPlane");
+		
+		lightPositionLocation = new int[MAX_LIGHTS];
+		lightColorLocation = new int[MAX_LIGHTS];
+		lightAttenuationFactorLocation = new int[MAX_LIGHTS];
+		for(int i = 0; i < MAX_LIGHTS; i++) {
+			lightPositionLocation[i] = super.getUniformLocation("lightPosition["+i+"]");
+			lightColorLocation[i] = super.getUniformLocation("lightColor["+i+"]");
+			lightAttenuationFactorLocation[i] = super.getUniformLocation("lightAttenuationFactor["+i+"]");
+		}
 	}
 	
 	public void loadTransformationMatrix(Matrix4f matrix) { super.loadMatrix(transformationMatrixLocation, matrix); }
 	public void loadProjectionMatrix(Matrix4f matrix) { super.loadMatrix(projectionMatrixLocation, matrix); }
 	public void loadViewMatrix(Matrix4f matrix) { super.loadMatrix(viewMatrixLocation, matrix); }
 	
-	public void loadLight(Light light){
-		loadLightPosition(light.getPosition());
-		loadLightColor(light.getColor());
+	public void loadLights(List<Light> lights){
+		for (int i = 0; i < MAX_LIGHTS; i++) {
+			if (i < lights.size()){
+				loadLightPosition(lights.get(i).getPosition(), i);
+				loadLightColor(lights.get(i).getColorTimesStrength(), i);
+				loadLightAttenuationFactor(lights.get(i).getAttenuationFactor(), i);
+			}else{
+				loadLightPosition(new Vector3f(0, 0, 0), i);
+				loadLightColor(new Vector3f(0, 0, 0), i);
+				loadLightAttenuationFactor(1, i);
+			}
+		}
 	}
-	private void loadLightPosition(Vector3f lightPosition) { super.loadVec3(lightPositionLocation, lightPosition); }
-	private void loadLightColor(Vector3f lightColor) { super.loadVec3(lightColorLocation, lightColor); }
-	
+	private void loadLightPosition(Vector3f lightPosition, int i) { super.loadVec3(lightPositionLocation[i], lightPosition); }
+	private void loadLightColor(Vector3f lightColor, int i) { super.loadVec3(lightColorLocation[i], lightColor); }
+	private void loadLightAttenuationFactor(float attenuation, int i) {super.loadFloat(lightAttenuationFactorLocation[i], attenuation);}	
+
 	public void loadSpecularValues(float shineDamping, float reflectivity) {
 		super.loadFloat(shineDampingLocation, shineDamping);
 		super.loadFloat(reflectivityLocation, reflectivity);
@@ -84,4 +105,6 @@ public class TerrainShader extends ShaderProgram {
 		super.loadInt(bTextureLocation, 3);
 		super.loadInt(splatMapLocation, 4);
 	}
+	
+	public void loadClipPlane(float a, float b, float c, float d) { super.loadVec4(clipPlaneLocation, new Vector4f(a, b, c, d)); }
 }

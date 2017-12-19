@@ -14,7 +14,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import renderEngine.Window;
+import window.Window;
 
 public class SocketManager {
 	private final int IN_BUFFER_SIZE = 4096;

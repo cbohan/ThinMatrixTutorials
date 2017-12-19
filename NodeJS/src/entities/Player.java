@@ -2,8 +2,8 @@ package entities;
 
 import org.lwjgl.glfw.GLFW;
 
-import renderEngine.Window;
 import terrains.TerrainGroup;
+import window.Window;
 
 public class Player extends Entity {
 	
