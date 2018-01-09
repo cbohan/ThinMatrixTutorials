@@ -14,8 +14,13 @@ public class TextureLoader {
 		if (texturesMap.containsKey(fileName))
 			return texturesMap.get(fileName);
 		
+		long beforeTime = System.nanoTime();
 		Texture texture = new Texture(fileName, clamp, mip);
 		texturesMap.put(fileName, texture);
+		
+		long afterTime = System.nanoTime();
+		double duration = (afterTime - beforeTime) / 1000000000.0;
+		System.out.println("Loaded texture: " + fileName + " (" + duration + " seconds)");
 		return texture;
 	}
 	

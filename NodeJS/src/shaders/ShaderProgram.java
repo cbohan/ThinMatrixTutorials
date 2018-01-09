@@ -15,34 +15,34 @@ public abstract class ShaderProgram {
 	private int programID;
 	private int vertexShaderID;
 	private int fragmentShaderID;
-	
-	private FloatBuffer matrixBuffer;
-	
-	public ShaderProgram(String vertexFile, String fragmentFile) {
-		matrixBuffer = BufferUtils.createFloatBuffer(16);
 		
+	public ShaderProgram(String vertexFile, String fragmentFile, String... attributes) {
 		vertexShaderID = loadShader(vertexFile, GL_VERTEX_SHADER);
 		fragmentShaderID = loadShader(fragmentFile, GL_FRAGMENT_SHADER);
 		programID = glCreateProgram();
 		glAttachShader(programID, vertexShaderID);
 		glAttachShader(programID, fragmentShaderID);
-		bindAttributes();
+		bindAttributes(attributes);
 		glLinkProgram(programID);
-		glValidateProgram(programID);
-		getAllUniformLocations();
+		glDetachShader(programID, vertexShaderID);
+		glDetachShader(programID, fragmentShaderID);
+		glDeleteShader(vertexShaderID);
+		glDeleteShader(fragmentShaderID);		
+				
+		System.out.println("Loaded shader: " + vertexFile + " -> " + fragmentFile);
 	}
 	
-	protected abstract void bindAttributes();
+	protected void bindAttributes(String[] attributes) {
+		for (int i = 0; i < attributes.length; i++)
+			glBindAttribLocation(programID, i, attributes[i]);
+		glValidateProgram(programID);
+	}
 	
 	public void start() { glUseProgram(programID); }
 	public void stop() { glUseProgram(0); }
 	
 	public void cleanUp() {
 		stop();
-		glDetachShader(programID, vertexShaderID);
-		glDetachShader(programID, fragmentShaderID);
-		glDeleteShader(vertexShaderID);
-		glDeleteShader(fragmentShaderID);
 		glDeleteProgram(programID);
 	}
 	
@@ -54,30 +54,13 @@ public abstract class ShaderProgram {
 		return glGetUniformLocation(programID, uniformName);
 	}
 	
-	protected abstract void getAllUniformLocations();
-	
-	protected void loadInt(int location, int value) { glUniform1i(location, value); }
-	protected void loadFloat(int location, float value) { glUniform1f(location, value); }
-	protected void loadVec2(int location, Vector2f value) { glUniform2f(location, value.x(), value.y()); }
-	protected void loadVec3(int location, Vector3f value) { glUniform3f(location, value.x(), value.y(), value.z()); }
-	protected void loadVec4(int location, Vector4f value) { glUniform4f(location, value.x(), value.y(), value.z(), value.w()); }
-	protected void loadMatrix(int location, Matrix4f value) { 
-		value.get(matrixBuffer);
-		glUniformMatrix4fv(location, false, matrixBuffer); 
+	protected void storeAllUniformLocations(Uniform... uniforms) {
+		for (Uniform uniform : uniforms)
+			uniform.storeUniformLocation(programID);
 	}
 	
 	private static int loadShader(String fileName, int shaderType) {
-		StringBuilder shaderSource = new StringBuilder();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(fileName));
-			String line;
-			while((line = reader.readLine()) != null)
-				shaderSource.append(line).append("\n");
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
+		String shaderSource = loadFile(fileName);
 		
 		int shaderID = glCreateShader(shaderType);
 		glShaderSource(shaderID, shaderSource);
@@ -89,5 +72,27 @@ public abstract class ShaderProgram {
 		}
 		
 		return shaderID;
+	}
+	
+	private static String loadFile(String fileName) {
+		StringBuilder shaderSource = new StringBuilder();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			String line;
+			while((line = reader.readLine()) != null) {
+				if (line.startsWith("#include")) {
+					String[] lineParts = line.split("\"");
+					shaderSource.append(loadFile(lineParts[1])).append("\n");
+				} else {
+					shaderSource.append(line).append("\n");
+				}
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
+		return shaderSource.toString();
 	}
 }

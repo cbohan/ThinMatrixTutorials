@@ -115,6 +115,8 @@ public class Window {
 	public static double getNormalizedMouseDeltaX() { return mouseDeltaX / (double)windowWidth; }
 	public static double getNormalizedMouseDeltaY() { return mouseDeltaY / (double)windowHeight; }
 	
+	public static boolean getLeftMouseClicked() { return mouseLeftClicked; }
+	public static boolean getRightMouseClicked() { return mouseRightClicked; }
 	public static boolean getLeftMouseDown() { return mouseLeftDown; }
 	public static boolean getRightMouseDown() { return mouseRightDown; }
 	

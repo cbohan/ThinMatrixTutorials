@@ -6,102 +6,68 @@ import org.joml.*;
 
 import entities.Light;
 import shaders.ShaderProgram;
+import shaders.UniformFloat;
+import shaders.UniformFloatArray;
+import shaders.UniformInt;
+import shaders.UniformMatrix;
+import shaders.UniformVec3;
+import shaders.UniformVec3Array;
 
 
 public class WaterShader extends ShaderProgram {
 	private static final int MAX_LIGHTS = 16;
 	
-	private static final String VERTEX_FILE = "src/water/waterVertexShader.glsl";
-	private static final String FRAGMENT_FILE = "src/water/waterFragmentShader.glsl";
+	private static final String VERTEX_FILE = "res\\shaders\\waterVertexShader.glsl";
+	private static final String FRAGMENT_FILE = "res\\shaders\\waterFragmentShader.glsl";
 	
-	private int transformationMatrixLocation;
-	private int projectionMatrixLocation;
-	private int viewMatrixLocation;
-	private int lightPositionLocation[];
-	private int lightColorLocation[];
-	private int lightAttenuationFactorLocation[];
-	private int skyColorLocation;
-	private int fogDensityLocation;
-	private int fogGradientLocation;
-	private int reflectionTextureLocation;
-	private int refractionTextureLocation;
-	private int waterDUDVMapLocation;
-	private int waterNormalMapLocation;
-	private int waterDepthMapLocation;
-	private int moveFactorLocation;
-	private int nearPlaneLocation;
-	private int farPlaneLocation;
+	public UniformMatrix transformationMatrix = new UniformMatrix("transformationMatrix");
+	public UniformMatrix projectionMatrix = new UniformMatrix("projectionMatrix");
+	public UniformMatrix viewMatrix = new UniformMatrix("viewMatrix");
+	
+	public UniformVec3Array lightPosition = new UniformVec3Array("lightPosition", MAX_LIGHTS);
+	public UniformVec3Array lightColor = new UniformVec3Array("lightColor", MAX_LIGHTS);
+	public UniformFloatArray lightAttenuationFactor = new UniformFloatArray("lightAttenuationFactor", MAX_LIGHTS);
+	
+	public UniformVec3 skyColor = new UniformVec3("skyColor");
+	public UniformFloat fogDensity = new UniformFloat("fogDensity");
+	public UniformFloat fogGradient = new UniformFloat("fogGradient");
+	
+	public UniformFloat moveFactor = new UniformFloat("moveFactor");
+	public UniformFloat nearPlane = new UniformFloat("nearPlane");
+	public UniformFloat farPlane = new UniformFloat("farPlane");
+	
+	private UniformInt reflectionTexture = new UniformInt("reflectionTexture");
+	private UniformInt refractionTexture = new UniformInt("refractionTexture");
+	private UniformInt waterDUDVMap = new UniformInt("waterDUDVMap");
+	private UniformInt waterNormalMap = new UniformInt("waterNormalMap");
+	private UniformInt waterDepthMap = new UniformInt("waterDepthMap");
 	
 	public WaterShader() {
-		super(VERTEX_FILE, FRAGMENT_FILE);
-	}
-	
-	protected void bindAttributes() {
-		super.bindAttribute(0, "position");
-		super.bindAttribute(1, "textureCoords");
-		super.bindAttribute(2, "normals");
-	}
-	
-	protected void getAllUniformLocations() {
-		transformationMatrixLocation = super.getUniformLocation("transformationMatrix");
-		projectionMatrixLocation = super.getUniformLocation("projectionMatrix");
-		viewMatrixLocation = super.getUniformLocation("viewMatrix");
-		skyColorLocation = super.getUniformLocation("skyColor");
-		fogDensityLocation = super.getUniformLocation("fogDensity");
-		fogGradientLocation = super.getUniformLocation("fogGradient");
-		reflectionTextureLocation = super.getUniformLocation("reflectionTexture");
-		refractionTextureLocation = super.getUniformLocation("refractionTexture");
-		waterDUDVMapLocation = super.getUniformLocation("waterDUDVMap");
-		waterNormalMapLocation = super.getUniformLocation("waterNormalMap");
-		waterDepthMapLocation = super.getUniformLocation("waterDepthMap");
-		moveFactorLocation = super.getUniformLocation("moveFactor");
-		nearPlaneLocation = super.getUniformLocation("nearPlane");
-		farPlaneLocation = super.getUniformLocation("farPlane");
-		
-		lightPositionLocation = new int[MAX_LIGHTS];
-		lightColorLocation = new int[MAX_LIGHTS];
-		lightAttenuationFactorLocation = new int[MAX_LIGHTS];
-		for(int i = 0; i < MAX_LIGHTS; i++) {
-			lightPositionLocation[i] = super.getUniformLocation("lightPosition["+i+"]");
-			lightColorLocation[i] = super.getUniformLocation("lightColor["+i+"]");
-			lightAttenuationFactorLocation[i] = super.getUniformLocation("lightAttenuationFactor["+i+"]");
-		}
+		super(VERTEX_FILE, FRAGMENT_FILE, "position", "textureCoords", "normals");
+		super.storeAllUniformLocations(transformationMatrix, projectionMatrix, viewMatrix, lightPosition, lightColor,
+				lightAttenuationFactor, skyColor, fogDensity, fogGradient, moveFactor, nearPlane, farPlane, 
+				reflectionTexture, refractionTexture, waterDUDVMap, waterNormalMap, waterDepthMap);
 	}
 	
 	public void connectTextureUnits() {
-		super.loadInt(reflectionTextureLocation, 0);
-		super.loadInt(refractionTextureLocation, 1);
-		super.loadInt(waterDUDVMapLocation, 2);
-		super.loadInt(waterNormalMapLocation, 3);
-		super.loadInt(waterDepthMapLocation, 4);
+		reflectionTexture.loadInt(0);
+		refractionTexture.loadInt(1);
+		waterDUDVMap.loadInt(2);
+		waterNormalMap.loadInt(3);
+		waterDepthMap.loadInt(4);
 	}
-	
-	public void loadTransformationMatrix(Matrix4f matrix) { super.loadMatrix(transformationMatrixLocation, matrix); }
-	public void loadProjectionMatrix(Matrix4f matrix) { super.loadMatrix(projectionMatrixLocation, matrix); }
-	public void loadViewMatrix(Matrix4f matrix) { super.loadMatrix(viewMatrixLocation, matrix); }
 	
 	public void loadLights(List<Light> lights){
 		for (int i = 0; i < MAX_LIGHTS; i++) {
 			if (i < lights.size()){
-				loadLightPosition(lights.get(i).getPosition(), i);
-				loadLightColor(lights.get(i).getColorTimesStrength(), i);
-				loadLightAttenuationFactor(lights.get(i).getAttenuationFactor(), i);
+				lightPosition.loadVec3(i, lights.get(i).getPosition());
+				lightColor.loadVec3(i, lights.get(i).getColorTimesStrength());
+				lightAttenuationFactor.loadFloat(i, lights.get(i).getAttenuationFactor());
 			}else{
-				loadLightPosition(new Vector3f(0, 0, 0), i);
-				loadLightColor(new Vector3f(0, 0, 0), i);
-				loadLightAttenuationFactor(1, i);
+				lightPosition.loadVec3(i, new Vector3f(0, 0, 0));
+				lightColor.loadVec3(i, new Vector3f(0, 0, 0));
+				lightAttenuationFactor.loadFloat(i, 0);
 			}
 		}
-	}
-	private void loadLightPosition(Vector3f lightPosition, int i) { super.loadVec3(lightPositionLocation[i], lightPosition); }
-	private void loadLightColor(Vector3f lightColor, int i) { super.loadVec3(lightColorLocation[i], lightColor); }
-	private void loadLightAttenuationFactor(float attenuation, int i) {super.loadFloat(lightAttenuationFactorLocation[i], attenuation);}
-	public void loadSkyColor(float r, float g, float b) { super.loadVec3(skyColorLocation, new Vector3f(r, g, b)); };
-	public void loadFogDensity(float density) { super.loadFloat(fogDensityLocation, density); }
-	public void loadFogGradient(float gradient) { super.loadFloat(fogGradientLocation, gradient); }	
-	public void loadMoveFactor(float factor) { super.loadFloat(moveFactorLocation, factor); }
-	public void loadCameraPlanes(float nearPlane, float farPlane) {
-		super.loadFloat(nearPlaneLocation, nearPlane);
-		super.loadFloat(farPlaneLocation, farPlane);
 	}
 }

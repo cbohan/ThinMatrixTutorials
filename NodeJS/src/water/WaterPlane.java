@@ -10,8 +10,8 @@ import textures.*;
 import window.Window;
 
 public class WaterPlane {
-	private final String WATER_DUDV_MAP_LOCATION = "res\\waterDUDV.png";
-	private final String WATER_NORMAL_MAP_LOCATION = "res\\waterNormalMap.png";
+	private final String WATER_DUDV_MAP_LOCATION = "res\\water\\waterDUDV.png";
+	private final String WATER_NORMAL_MAP_LOCATION = "res\\water\\waterNormalMap.png";
 	private final float WAVE_SPEED = .04f;
 	
 	private static WaterShader shader = new WaterShader();
@@ -52,14 +52,15 @@ public class WaterPlane {
 		waterFBOs.getRefractionDepthTexture().bind(4);
 		moveFactor += WAVE_SPEED * Window.getDeltaTime();
 		moveFactor %= 1;
-		shader.loadMoveFactor(moveFactor);
+		shader.moveFactor.loadFloat(moveFactor);
 		shader.loadLights(scene.getLights());
-		shader.loadViewMatrix(camera.getViewMatrix());
-		shader.loadProjectionMatrix(camera.getProjectionMatrix());
-		shader.loadSkyColor(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());
-		shader.loadFogDensity(camera.getFogDensity());
-		shader.loadFogGradient(camera.getFogGradient());
-		shader.loadCameraPlanes(camera.getNearPlane(), camera.getFarPlane());
+		shader.viewMatrix.loadMatrix(camera.getViewMatrix());
+		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
+		shader.skyColor.loadVec3(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());
+		shader.fogDensity.loadFloat(camera.getFogDensity());
+		shader.fogGradient.loadFloat(camera.getFogGradient());
+		shader.nearPlane.loadFloat(camera.getNearPlane());
+		shader.farPlane.loadFloat(camera.getFarPlane());
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -67,7 +68,7 @@ public class WaterPlane {
 		for (int i = 0; i < 3; i++)
 			glEnableVertexAttribArray(i);
 
-		shader.loadTransformationMatrix(transform.getMatrix());
+		shader.transformationMatrix.loadMatrix(transform.getMatrix());
 		glDrawElements(GL_TRIANGLES, rawModel.getVertexCount(), GL_UNSIGNED_INT, 0);
 
 		

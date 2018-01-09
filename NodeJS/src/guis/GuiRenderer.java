@@ -10,10 +10,9 @@ import org.joml.Vector3f;
 import models.*;
 
 public class GuiRenderer {
-	private static final RawModel quad = ModelLoader.loadToVAO(new float[] {-1, 1,  -1, -1,  1, 1,  1, -1});;
+	private static final RawModel quad = ModelLoader.loadToVAO(new float[] {0, 1, 0, 0, 1, 1, 1, 0});;
 	private static List<GuiTexture> guis = new ArrayList<GuiTexture>();
 	private static GuiShader shader = new GuiShader();
-	private static Matrix4f matrix = new Matrix4f();
 	
 	public static void addGUI(GuiTexture gui) {
 		guis.add(gui);
@@ -30,18 +29,21 @@ public class GuiRenderer {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
 		
 		for(GuiTexture gui : guis) {
-			gui.getTexture().bind(0);
+			if (gui.getTexture() != null)
+				gui.getTexture().bind(0);
 			
-			matrix.identity();
-			matrix.translate(new Vector3f(gui.getPosition().x, gui.getPosition().y, 0f));
-			matrix.scale(new Vector3f(gui.getScale().x, gui.getScale().y, 1f));
-			shader.loadTransformation(matrix);
+			shader.translation.loadVec2(gui.getPosition());
+			shader.scale.loadVec2(gui.getScale());
+			shader.color.loadVec3(gui.getColor());
+			shader.useColor.loadFloat(gui.getUseColor());
 			
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, quad.getVertexCount());
 		}
 		
+		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 		glDisableVertexAttribArray(0);

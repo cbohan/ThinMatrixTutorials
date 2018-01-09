@@ -8,10 +8,14 @@ public class OBJLoader {
 	private static Map<String, RawModel> objModelMap = new HashMap<String, RawModel>();
 	
 	public static RawModel loadOBJ(String fileName) {
+		return loadOBJ(fileName, false);
+	}
+	
+	public static RawModel loadOBJ(String fileName, boolean invertUVs) {
 		if (objModelMap.containsKey(fileName))
 			return objModelMap.get(fileName);
 		
-		System.out.println("Loading model: " + fileName);
+		long beforeTime = System.nanoTime();
 		
 		FileReader fr = null;
 		
@@ -47,6 +51,7 @@ public class OBJLoader {
 					positions.add(position);
 				}else if(line.startsWith("vt ")){
 					Vector2f uv = new Vector2f(Float.parseFloat(currentLine[1]), Float.parseFloat(currentLine[2]));
+					if (invertUVs) { uv.y = 1 - uv.y; }
 					uvs.add(uv);
 				}else if(line.startsWith("vn ")){
 					Vector3f normal = new Vector3f(Float.parseFloat(currentLine[1]),
@@ -130,6 +135,11 @@ public class OBJLoader {
 		
 		RawModel model = ModelLoader.loadToVAO(positionsArray, uvsArray, normalsArray, indicesArray);
 		objModelMap.put(fileName, model);
+		
+		long afterTime = System.nanoTime();
+		double duration = (afterTime - beforeTime) / 1000000000.0;
+		System.out.println("Loaded model: " + fileName + " (" + duration + " seconds)");
+		
 		return model;
 	}
 	

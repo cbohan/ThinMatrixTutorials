@@ -21,16 +21,17 @@ public class EntityRenderer {
 	
 	public static void render(Scene scene, Camera camera, float clippingPlaneDirection, float clippingPlaneHeight) {
 		shader.start();
-		shader.loadClipPlane(0, clippingPlaneDirection, 0, clippingPlaneHeight);
+		shader.clipPlane.loadVec4(0, clippingPlaneDirection, 0, clippingPlaneHeight);
 		shader.loadLights(scene.getLights());
-		shader.loadViewMatrix(camera.getViewMatrix());
-		shader.loadProjectionMatrix(camera.getProjectionMatrix());
-		shader.loadSkyColor(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());
-		shader.loadFogDensity(camera.getFogDensity());
-		shader.loadFogGradient(camera.getFogGradient());
+		shader.viewMatrix.loadMatrix(camera.getViewMatrix());
+		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
+		shader.skyColor.loadVec3(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());
+		shader.fogDensity.loadFloat(camera.getFogDensity());
+		shader.fogGradient.loadFloat(camera.getFogGradient());
 		
 		for (TexturedModel model : entities.keySet()){
-			shader.loadSpecularValues(model.getShineDamping(), model.getReflectivity());
+			shader.shineDamping.loadFloat(model.getShineDamping());
+			shader.reflectivity.loadFloat(model.getReflectivity());
 			RawModel rawModel = model.getRawModel();
 			glBindVertexArray(rawModel.getVaoId());
 			for (int i = 0; i < 3; i++)
@@ -40,13 +41,13 @@ public class EntityRenderer {
 			if (model.getTexture().getHasTransparency()) 
 				glDisable(GL_CULL_FACE);
 			
-			shader.loadOverrideNormals(model.getTexture().getOverrideNormals());
+			shader.overrideNormals.loadFloat(model.getTexture().getOverrideNormals() ? 1 : 0);
 			
 			List<Entity> batch = entities.get(model);
 			for (Entity entity: batch) {
-				shader.loadTransformationMatrix(entity.getTransform().getMatrix());
-				shader.loadTextureInfo(entity.getTexturedModel().getTexture().getNumberOfRows(), 
-						entity.getTextureXOffset(), entity.getTextureYOffset());
+				shader.transformationMatrix.loadMatrix(entity.getTransform().getMatrix());
+				shader.textureNumberOfRows.loadFloat(entity.getTexturedModel().getTexture().getNumberOfRows()); 
+				shader.textureOffset.loadVec2(entity.getTextureXOffset(), entity.getTextureYOffset());
 				glDrawElements(GL_TRIANGLES, rawModel.getVertexCount(), GL_UNSIGNED_INT, 0);
 			}
 			

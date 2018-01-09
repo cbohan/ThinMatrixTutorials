@@ -6,11 +6,17 @@ import org.joml.Math;
 public class Transform {
 	private Matrix4f matrix;
 	
+	private float pitchCorrection;
+	private float scaleCorrection;
+	
 	private float posX, posY, posZ;
 	private float rotX, rotY, rotZ;
 	private float scaleX, scaleY, scaleZ;
 	
 	public Transform() {
+		pitchCorrection = 0;
+		scaleCorrection = 1;
+		
 		posX = 0;
 		posY = 0;
 		posZ = 0;
@@ -26,7 +32,10 @@ public class Transform {
 		matrix = new Matrix4f();
 		matrix.identity();
 	}
-
+	
+	public void setPitchCorrection(float correction) { pitchCorrection = correction; }
+	public void setScaleCorrection(float correction) { scaleCorrection = correction; }
+	
 	public void move(float x, float y, float z) {
 		posX += x;
 		posY += y;
@@ -130,7 +139,8 @@ public class Transform {
 		matrix.rotate((float)Math.toRadians(rotX), new Vector3f(1, 0, 0));
 		matrix.rotate((float)Math.toRadians(rotY), new Vector3f(0, 1, 0));
 		matrix.rotate((float)Math.toRadians(rotZ), new Vector3f(0, 0, 1));
-		matrix.scale(new Vector3f(scaleX, scaleY, scaleZ));
+		matrix.rotate((float)Math.toRadians(pitchCorrection), new Vector3f(1, 0, 0));
+		matrix.scale(new Vector3f(scaleX * scaleCorrection, scaleY * scaleCorrection, scaleZ * scaleCorrection));
 				
 		return matrix;
 	}

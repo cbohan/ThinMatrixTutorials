@@ -17,14 +17,27 @@ public class ModelLoader {
 	private static List<Integer> vbos = new ArrayList<Integer>();
 	
 	public static RawModel loadToVAO(float[] positions, float[] uvs, float[] normals, int[] indices) {
-		int vaoID = createVAO();
+		int vaoId = createVAO();
 		bindIndicesBuffer(indices);
 		storeDataInAttributeList(0, positions, 3);
 		storeDataInAttributeList(1, uvs, 2);
 		storeDataInAttributeList(2, normals, 3);
 		unbindVAO();
 		
-		return new RawModel(vaoID, indices.length);
+		return new RawModel(vaoId, indices.length);
+	}
+	
+	public static RawModel loadAnimatedModelToVAO(float[] positions, float[] uvs, float[] normals, int[] jointIds, 
+	float[] vertexWeights, int[] indices) {
+		int vaoId = createVAO();
+		bindIndicesBuffer(indices);
+		storeDataInAttributeList(0, positions, 3);
+		storeDataInAttributeList(1, uvs, 2);
+		storeDataInAttributeList(2, normals, 3);
+		storeDataInAttributeList(3, jointIds, 3);
+		storeDataInAttributeList(4, vertexWeights, 3);
+		unbindVAO();
+		return new RawModel(vaoId, indices.length);
 	}
 	
 	public static RawModel loadToVAO(float[] positions) {
@@ -33,6 +46,15 @@ public class ModelLoader {
 		unbindVAO();
 		
 		return new RawModel(vaoID, positions.length / 2);
+	}
+	
+	public static int loadToVAO(float[] positions, float[] textureCoords) {
+		int vaoID = createVAO();
+		storeDataInAttributeList(0, positions, 2);
+		storeDataInAttributeList(1, textureCoords, 2);
+		unbindVAO();
+		
+		return vaoID;
 	}
 	
 	private static int createVAO() {
@@ -49,6 +71,16 @@ public class ModelLoader {
 		FloatBuffer buffer = storeDataInFloatBuffer(data);
 		glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 		glVertexAttribPointer(attributeNumber, dataLength, GL_FLOAT, false, 0, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	
+	private static void storeDataInAttributeList(int attributeNumber, int[] data, int dataLength) {
+		int vboID = glGenBuffers();
+		vbos.add(vboID);
+		glBindBuffer(GL_ARRAY_BUFFER, vboID);
+		IntBuffer buffer = storeDataInIntBuffer(data);
+		glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+		glVertexAttribIPointer(attributeNumber, dataLength, GL_INT, dataLength * 4, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	

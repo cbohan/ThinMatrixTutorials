@@ -18,16 +18,17 @@ public class TerrainRenderer {
 	
 	public static void render(Scene scene, Camera camera, float clippingPlaneDirection, float clippingPlaneHeight) {
 		shader.start();
-		shader.loadClipPlane(0, clippingPlaneDirection, 0, clippingPlaneHeight);
+		shader.clipPlane.loadVec4(0, clippingPlaneDirection, 0, clippingPlaneHeight);
 		shader.loadLights(scene.getLights());
-		shader.loadViewMatrix(camera.getViewMatrix());
-		shader.loadProjectionMatrix(camera.getProjectionMatrix());
-		shader.loadSkyColor(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());
-		shader.loadFogDensity(camera.getFogDensity());
-		shader.loadFogGradient(camera.getFogGradient());
+		shader.viewMatrix.loadMatrix(camera.getViewMatrix());
+		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
+		shader.skyColor.loadVec3(camera.getSkyRed(), camera.getSkyGreen(), camera.getSkyBlue());
+		shader.fogDensity.loadFloat(camera.getFogDensity());
+		shader.fogGradient.loadFloat(camera.getFogGradient());
 		
 		for(Terrain terrain:terrains) {
-			shader.loadSpecularValues(1, 0);
+			shader.shineDamping.loadFloat(1);
+			shader.reflectivity.loadFloat(0);
 			glBindVertexArray(terrain.getModel().getVaoId());
 			for (int i = 0; i < 3; i++)
 				glEnableVertexAttribArray(i);
@@ -39,7 +40,7 @@ public class TerrainRenderer {
 			terrain.getTexturePack().getBTexture().bind(3);
 			terrain.getSplatMap().bind(4);
 			
-			shader.loadTransformationMatrix(terrain.getTransform().getMatrix());
+			shader.transformationMatrix.loadMatrix(terrain.getTransform().getMatrix());
 			glDrawElements(GL_TRIANGLES, terrain.getModel().getVertexCount(), GL_UNSIGNED_INT, 0);
 			
 			for (int i = 0; i < 3; i++)

@@ -3,6 +3,7 @@ package entities;
 import org.joml.Vector3f;
 
 public class Light {
+	private String name;
 	private Vector3f position;
 	private Vector3f color;
 	private float strength;
@@ -10,6 +11,7 @@ public class Light {
 	private float radius;
 	
 	public Light(Vector3f position, Vector3f color){
+		this.name = "";
 		this.position = position;
 		this.color = color;
 		strength = 10;
@@ -17,6 +19,8 @@ public class Light {
 		radius = 25f;
 	}
 	
+	public void setName(String name) { this.name = name; }
+	public String getName() { return name; }
 	public Vector3f getPosition() { return position; }
 	public void setPosition(Vector3f position) { this.position = position; }
 	public Vector3f getColor() { return color; }

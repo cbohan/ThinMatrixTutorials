@@ -44,8 +44,8 @@ public class PlayerCamera extends Camera {
 		
 		if (Window.getRightMouseDown()){
 			if (yawAngle != 0)
-				player.transform.setRotY(player.transform.getRotY() + yawAngle);
-			player.transform.setRotY((float) (player.transform.getRotY() - (Window.getMouseDeltaX() * 0.3f)));
+				player.getTransform().setRotY(player.getTransform().getRotY() + yawAngle);
+			player.getTransform().setRotY((float) (player.getTransform().getRotY() - (Window.getMouseDeltaX() * 0.3f)));
 			yawAngle = 0f;
 		}
 	}

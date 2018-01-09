@@ -16,8 +16,8 @@ public class Entity {
 		transform = new Transform();
 	}
 	
-	public Entity(String modelPath, String texturePath) {
-		RawModel rawModel = OBJLoader.loadOBJ(modelPath);
+	public Entity(String modelPath, String texturePath, boolean invertUVs) {
+		RawModel rawModel = OBJLoader.loadOBJ(modelPath, invertUVs);
 		Texture texture = TextureLoader.loadTexture(texturePath);
 		model = new TexturedModel(rawModel, texture);
 		transform = new Transform();
